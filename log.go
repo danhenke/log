@@ -16,6 +16,9 @@ var (
 		Writer: DefaultWriter,
 		Prefix: DefaultPrefixFunc,
 	}
+	DiscardLogger = &Logger{
+		Writer: io.Discard,
+	}
 )
 
 // Logger is responsible for writing log messages.
@@ -52,7 +55,10 @@ func (l *Logger) Logf(format string, v ...interface{}) {
 
 // Write writes a log message via the underlying Writer and returns the number of bytes written, or error on failure.
 func (l *Logger) Write(b []byte) (n int, err error) {
-	buf := []byte(l.Prefix())
+	buf := []byte{}
+	if l.Prefix != nil {
+		buf = append(buf, l.Prefix()...)
+	}
 	buf = append(buf, b...)
 	if len(buf) == 0 || buf[len(buf)-1] != '\n' {
 		buf = append(buf, '\n')
